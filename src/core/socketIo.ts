@@ -10,7 +10,5 @@ export default (server: HttpServer) => {
     console.log(socket.id);
   });
 
-  io.on("disconnect", (socket) => {
-    console.log("hello");
-  });
+  io.on("disconnect", (socket) => {});
 };
