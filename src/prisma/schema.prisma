@@ -7,7 +7,22 @@ generator client {
     provider = "prisma-client-js"
 }
 
-model User {
-    id   Int    @id @default(autoincrement())
-    name String
+model Player {
+    id          Int           @id @default(autoincrement())
+    displayName String
+    match       MatchPlayers?
+}
+
+model Match {
+    id      Int            @id @default(autoincrement())
+    roomId  String         @unique
+    players MatchPlayers[]
+}
+
+model MatchPlayers {
+    id       Int    @id @default(autoincrement())
+    Match    Match  @relation(fields: [matchId], references: [id])
+    matchId  Int
+    Player   Player @relation(fields: [playerId], references: [id])
+    playerId Int    @unique
 }
