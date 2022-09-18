@@ -9,20 +9,35 @@ generator client {
 
 model Player {
     id          Int           @id @default(autoincrement())
+    uid         String        @unique
     displayName String
     match       MatchPlayers?
+    MatchLog    MatchLog[]
 }
 
-model Match {
-    id      Int            @id @default(autoincrement())
-    roomId  String         @unique
-    players MatchPlayers[]
+model Matches {
+    id       Int            @id @default(autoincrement())
+    roomId   String         @unique
+    players  MatchPlayers[]
+    matchLog MatchLog[]
 }
 
 model MatchPlayers {
-    id       Int    @id @default(autoincrement())
-    Match    Match  @relation(fields: [matchId], references: [id])
-    matchId  Int
-    Player   Player @relation(fields: [playerId], references: [id])
-    playerId Int    @unique
+    id         Int     @id @default(autoincrement())
+    Match      Matches @relation(fields: [matchId], references: [id])
+    matchId    Int
+    Player     Player  @relation(fields: [playerId], references: [id])
+    playerId   Int     @unique
+    playerIcon String  @default("")
+    point      Int     @default(0)
+}
+
+model MatchLog {
+    id       Int     @id @default(autoincrement())
+    Matches  Matches @relation(fields: [matcheId], references: [id])
+    matcheId Int
+    column   Int
+    row      Int
+    Player   Player  @relation(fields: [playerId], references: [id])
+    playerId Int
 }
