@@ -9,7 +9,7 @@ generator client {
 
 model Player {
     id          Int           @id @default(autoincrement())
-    uuid         String        @unique @default(uuid())
+    uuid        String        @unique @default(uuid())
     socketId    String        @unique @default(uuid())
     displayName String
     match       MatchPlayers?
