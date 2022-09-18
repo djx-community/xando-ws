@@ -1,16 +1,8 @@
-import express from "express";
 import http from "http";
-import cors from "cors";
-import api from "./core/api";
+import expressApp from "./core/expressApp";
 import socketIo from "./core/socketIo";
 
-const app = express();
-
-app.use(cors());
-
-const server = http.createServer(app);
-
-app.use("/", api);
+const server = http.createServer(expressApp);
 
 server.listen("3000", () => {
   console.log("Listening on port 3000");
