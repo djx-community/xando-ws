@@ -1,8 +1,8 @@
 import express from "express";
 import http from "http";
 import cors from "cors";
-import api from "./api";
-import socketIo from "./socketIo";
+import api from "./api/api";
+import socketIo from "./socket/socketIo";
 
 const app = express();
 
