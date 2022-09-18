@@ -9,17 +9,19 @@ generator client {
 
 model Player {
     id          Int           @id @default(autoincrement())
-    uid         String        @unique
+    uuid         String        @unique @default(uuid())
+    socketId    String        @unique @default(uuid())
     displayName String
     match       MatchPlayers?
     MatchLog    MatchLog[]
 }
 
 model Matches {
-    id       Int            @id @default(autoincrement())
-    roomId   String         @unique
-    players  MatchPlayers[]
-    matchLog MatchLog[]
+    id        Int            @id @default(autoincrement())
+    roomId    String         @unique
+    createdAt DateTime       @default(now())
+    players   MatchPlayers[]
+    matchLog  MatchLog[]
 }
 
 model MatchPlayers {
