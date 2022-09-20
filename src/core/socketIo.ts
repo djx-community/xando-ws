@@ -1,4 +1,4 @@
-import { Server as IoServer } from "socket.io";
+import { Server as IoServer, Socket } from "socket.io";
 import { Server as HttpServer } from "http";
 import {} from "../logic/socketHelper";
 
@@ -7,9 +7,7 @@ export default (server: HttpServer): IoServer => {
     cors: { origin: "*" },
   });
 
-  io.on("connection", (socket) => {});
-
-  io.on("disconnect", (socket) => {});
+  io.on("connection", async (socket: Socket) => {});
 
   return io;
 };
