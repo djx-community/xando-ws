@@ -12,5 +12,5 @@ expressHelper
       res.json({ data: player });
     } catch {}
   });
-
+  
 export default expressHelper;
