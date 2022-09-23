@@ -27,7 +27,9 @@ export default (server: HttpServer): IoServer => {
       }
     });
     socket.on("match", async (payload: Payload) => {});
-    socket.on("quick_play", (payload: Payload) => {});
+    socket.on("quick_play", (payload: Payload) => {
+      
+    });
     socket.on("play_with_friend", (payload: Payload) => {
       if (payload.action === "request") {
       }
