@@ -1,5 +1,6 @@
-import { Player as prismaPlayer } from "@prisma/client";
+import { Player, Player as prismaPlayer } from "@prisma/client";
 
-export interface Player extends prismaPlayer {
-
+export interface Payload {
+  action: string;
+  data: Object | Player;
 }
