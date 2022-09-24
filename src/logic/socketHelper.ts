@@ -22,18 +22,11 @@ export default {
     });
   },
   checkAvailableRoom: (): Promise<String> => {
-    return new Promise((resolve, reject) => {
-      prisma.fetchVacantRoom().then((res)=>{
-        let count=res.length
-        for (let index = 0; index < count; index++) {
-          if (res[index]._count.players=1) {
-            let roomId=res[index].roomId;
-            console.log(roomId);            
-            resolve(roomId)
-          }
-        }
-        reject()
-      });
+    return new Promise(async (resolve, reject) => {
+      const matches = await prisma.getVacantMatch();
+      if (matches.length === 0) resolve("");
+      else
+        resolve((await prisma.getMatchById(matches[0].matchId))?.roomId || "");
     });
   },
   createRoom: (): Promise<String> => {
@@ -52,11 +45,10 @@ export default {
     roomId: String,
     playerIcon: "X" | "O"
   ) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async () => {
       const playerId: Number =
-        (await prisma.getPlayerIdBySocketId(socketId))?.id || 0;
-      const matchId: Number =
-        (await prisma.getPlayerIdByRoomId(roomId))?.id || 0;
+        (await prisma.getPlayerBySocketId(socketId))?.id || 0;
+      const matchId: Number = (await prisma.getMatchByRoomId(roomId))?.id || 0;
 
       if (playerId !== 0 && matchId !== 0) {
         await prisma.joinPlayerToRoom({

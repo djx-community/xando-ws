@@ -29,6 +29,8 @@ export default (server: HttpServer): IoServer => {
 
     socket.on("match", async (payload: Payload) => {});
 
+
+    //quick play listener
     socket.on("quick_play", async (payload: Payload) => {
       let playerIcon: "X" | "O" = "O";
       let roomId: String = "";

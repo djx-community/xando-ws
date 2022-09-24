@@ -13,16 +13,17 @@ export default {
       data: data,
     });
   },
-  fetchVacantRoom: () => {
-    return prisma.matches.findMany({
-      include:{
-        _count:{
-          select:{
-            players:true
-          }
-        }
-      }
-      });
+  getVacantMatch: () => {
+    return prisma.matchPlayers.groupBy({
+      by: ["matchId"],
+      having: {
+        matchId: {
+          _count: {
+            equals: 1,
+          },
+        },
+      },
+    });
   },
   createRoom: () => {
     return prisma.matches.create({
@@ -37,14 +38,21 @@ export default {
   deletePlayer: (socketId: String) => {
     return prisma.player.delete({ where: { socketId: socketId as string } });
   },
-  getPlayerIdBySocketId: (socketId: String) => {
+  getPlayerBySocketId: (socketId: String) => {
     return prisma.player.findUnique({
       where: { socketId: socketId as string },
     });
   },
-  getPlayerIdByRoomId: (roomId: String) => {
+  getMatchByRoomId: (roomId: String) => {
     return prisma.matches.findUnique({
       where: { roomId: roomId as string },
+    });
+  },
+  getMatchById: (matchId: Number) => {
+    return prisma.matches.findUnique({
+      where: {
+        id: matchId as number,
+      },
     });
   },
 };
