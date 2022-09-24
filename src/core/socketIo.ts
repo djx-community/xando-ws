@@ -42,6 +42,10 @@ export default (server: HttpServer): IoServer => {
 
       socketHelper.joinPlayerToRoom(socket.id, roomId, playerIcon);
       socket.join(roomId as string);
+
+      if(playerIcon==='O'){
+        // start game todo
+      }
     });
 
     socket.on("play_with_friend", (payload: Payload) => {
@@ -55,7 +59,6 @@ export default (server: HttpServer): IoServer => {
     socket.on("disconnect", async (reason: String) => {
       try {
         await socketHelper.deletePlayer(socket.id);
-        console.log(reason);
       } catch (e) {
         console.log(e);
       }
