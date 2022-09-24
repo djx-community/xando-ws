@@ -30,23 +30,35 @@ export default (server: HttpServer): IoServer => {
     socket.on("match", async (payload: Payload) => {});
 
     socket.on("quick_play", async (payload: Payload) => {
+      let playerIcon: "X" | "O" = "O";
       let roomId: String = "";
+
       socketHelper.checkAvailableRoom();
-      if (roomId === "") roomId = await socketHelper.createRoom();
-      socketHelper.joinPlayerToRoom(socket.id, roomId);
+
+      if (roomId === "") {
+        roomId = await socketHelper.createRoom();
+        playerIcon = "X";
+      }
+
+      socketHelper.joinPlayerToRoom(socket.id, roomId, playerIcon);
       socket.join(roomId as string);
     });
 
     socket.on("play_with_friend", (payload: Payload) => {
       if (payload.action === "request") {
       }
+
       if (payload.action === "response") {
       }
     });
 
     socket.on("disconnect", async (reason: String) => {
-      await socketHelper.deletePlayer(socket.id);
-      console.log(reason);
+      try {
+        await socketHelper.deletePlayer(socket.id);
+        console.log(reason);
+      } catch (e) {
+        console.log(e);
+      }
     });
   });
 
