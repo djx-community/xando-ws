@@ -3,6 +3,7 @@ import { Server as HttpServer } from "http";
 import socketHelper from "../logic/socketHelper";
 import { Payload } from "../config/types";
 import { Player } from "@prisma/client";
+import { exit } from "process";
 
 export default (server: HttpServer): IoServer => {
   const io = new IoServer(server, {
@@ -31,8 +32,8 @@ export default (server: HttpServer): IoServer => {
 
     socket.on("quick_play", async (payload: Payload) => {
       let roomId: String = "";
-      socketHelper.checkAvailableRoom();
-      if (roomId === "") roomId = await socketHelper.createRoom();
+      roomId=await socketHelper.checkAvailableRoom();
+      if (roomId === ""){ roomId = await socketHelper.createRoom();}
       socketHelper.joinPlayerToRoom(socket.id, roomId);
       socket.join(roomId as string);
     });

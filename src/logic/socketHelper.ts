@@ -24,7 +24,17 @@ export default {
   },
   checkAvailableRoom: (): Promise<String> => {
     return new Promise((resolve, reject) => {
-      prisma.fetchVacantRoom();
+      prisma.fetchVacantRoom().then((res)=>{
+        let count=res.length
+        for (let index = 0; index < count; index++) {
+          if (res[index]._count.players=1) {
+            let roomId=res[index].roomId;
+            console.log(roomId);            
+            resolve(roomId)
+          }
+        }
+        reject()
+      });
     });
   },
   createRoom: (): Promise<String> => {
