@@ -1,6 +1,5 @@
 import { PrismaClient, Player, Matches, MatchPlayers } from "@prisma/client";
 import uniqId from "uniqid";
-import socketIo from "../core/socketIo";
 
 const prisma = new PrismaClient();
 
@@ -15,7 +14,15 @@ export default {
     });
   },
   fetchVacantRoom: () => {
-    return prisma.matches.count({});
+    return prisma.matches.findMany({
+      include:{
+        _count:{
+          select:{
+            players:true
+          }
+        }
+      }
+      });
   },
   createRoom: () => {
     return prisma.matches.create({

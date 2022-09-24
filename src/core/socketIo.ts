@@ -33,7 +33,7 @@ export default (server: HttpServer): IoServer => {
       let playerIcon: "X" | "O" = "O";
       let roomId: String = "";
 
-      socketHelper.checkAvailableRoom();
+      roomId = await socketHelper.checkAvailableRoom();
 
       if (roomId === "") {
         roomId = await socketHelper.createRoom();
@@ -43,7 +43,7 @@ export default (server: HttpServer): IoServer => {
       socketHelper.joinPlayerToRoom(socket.id, roomId, playerIcon);
       socket.join(roomId as string);
 
-      if(playerIcon==='O'){
+      if (playerIcon === "O") {
         // start game todo
       }
     });
