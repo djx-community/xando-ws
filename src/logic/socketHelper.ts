@@ -1,6 +1,5 @@
 import { MatchPlayers, Player } from "@prisma/client";
 import uniqId from "uniqid";
-import socketIo from "../core/socketIo";
 import prisma from "./prisma";
 
 export default {
@@ -48,8 +47,6 @@ export default {
         (await prisma.getPlayerIdBySocketId(socketId))?.id || 0;
       const matchId: Number =
         (await prisma.getPlayerIdByRoomId(roomId))?.id || 0;
-
-      console.log({ matchId, playerId });
 
       if (playerId !== 0 && matchId !== 0) {
         await prisma.joinPlayerToRoom({
