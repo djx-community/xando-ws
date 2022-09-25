@@ -12,10 +12,13 @@ export default (server: HttpServer): IoServer => {
   io.on("connection", (socket: Socket) => {
     socket.on("player", async (payload: Payload) => {
       if (payload.action === "create") {
-        const player = await socketHelper.createPlayer({
+        const player: Player = await socketHelper.createPlayer({
           ...payload.data,
           socketId: socket.id,
         } as Player);
+
+        socket.join(player.uuid); //joining to unique room
+
         socket.emit("player", player);
       }
       if (payload.action === "update") {
@@ -29,11 +32,10 @@ export default (server: HttpServer): IoServer => {
 
     socket.on("match", async (payload: Payload) => {});
 
-
     //quick play listener
     socket.on("quick_play", async (payload: Payload) => {
       let playerIcon: "X" | "O" = "O";
-      let roomId: String = "";
+      let roomId: string = "";
 
       roomId = await socketHelper.checkAvailableRoom();
 
@@ -43,15 +45,31 @@ export default (server: HttpServer): IoServer => {
       }
 
       socketHelper.joinPlayerToRoom(socket.id, roomId, playerIcon);
-      socket.join(roomId as string);
+      socket.join(roomId);
 
       if (playerIcon === "O") {
         // start game todo
       }
     });
 
-    socket.on("play_with_friend", (payload: Payload) => {
+    socket.on("play_with_friend", async (payload: Payload) => {
       if (payload.action === "request") {
+        const player = await socketHelper.getPlayerBySocketId(socket.id);
+
+        if (player === null) {
+          //todo
+        }
+
+        socket.join(payload.data.friendUuid);
+
+        socket.to(payload.data.friendUuid).emit("player", {
+          action: "match_request",
+          data: {
+            by: player,
+          },
+        });
+
+        socket.leave(payload.data.friendUuid);
       }
 
       if (payload.action === "response") {

@@ -22,6 +22,7 @@ model Matches {
     createdAt DateTime       @default(now())
     players   MatchPlayers[]
     matchLog  MatchLog[]
+    lap       Int            @default(0)
 }
 
 model MatchPlayers {
@@ -35,11 +36,12 @@ model MatchPlayers {
 }
 
 model MatchLog {
-    id       Int     @id @default(autoincrement())
-    Matches  Matches @relation(fields: [matcheId], references: [id])
-    matcheId Int
-    column   Int
-    row      Int
-    Player   Player  @relation(fields: [playerId], references: [id])
-    playerId Int
+    id        Int      @id @default(autoincrement())
+    Matches   Matches  @relation(fields: [matcheId], references: [id])
+    matcheId  Int
+    column    Int
+    row       Int
+    Player    Player   @relation(fields: [playerId], references: [id])
+    playerId  Int
+    createdAt DateTime @default(now())
 }

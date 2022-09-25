@@ -55,4 +55,11 @@ export default {
       },
     });
   },
+  getPlayerByUuid: (uuid: String) => {
+    return prisma.player.findUnique({
+      where: {
+        uuid: uuid as string,
+      },
+    });
+  },
 };

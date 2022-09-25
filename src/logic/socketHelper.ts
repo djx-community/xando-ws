@@ -3,7 +3,7 @@ import uniqId from "uniqid";
 import prisma from "./prisma";
 
 export default {
-  createPlayer: (player: Player) => {
+  createPlayer: (player: Player): Promise<Player> => {
     return new Promise(async (resolve, reject) => {
       try {
         resolve(
@@ -21,7 +21,7 @@ export default {
       } catch (e) {}
     });
   },
-  checkAvailableRoom: (): Promise<String> => {
+  checkAvailableRoom: (): Promise<string> => {
     return new Promise(async (resolve, reject) => {
       const matches = await prisma.getVacantMatch();
       if (matches.length === 0) resolve("");
@@ -29,19 +29,19 @@ export default {
         resolve((await prisma.getMatchById(matches[0].matchId))?.roomId || "");
     });
   },
-  createRoom: (): Promise<String> => {
+  createRoom: (): Promise<string> => {
     return new Promise(async (resolve, reject) => {
       const roomId = await (await prisma.createRoom()).roomId;
       resolve(roomId);
     });
   },
-  deletePlayer: (socketId: String) => {
+  deletePlayer: (socketId: string) => {
     return new Promise((resolve, reject) => {
       resolve(prisma.deletePlayer(socketId));
     });
   },
   joinPlayerToRoom: (
-    socketId: String,
+    socketId: string,
     roomId: String,
     playerIcon: "X" | "O"
   ) => {
@@ -57,6 +57,11 @@ export default {
           playerIcon,
         } as MatchPlayers);
       }
+    });
+  },
+  getPlayerBySocketId: (socketId: string): Promise<Player | null> => {
+    return new Promise(async (resolve, reject) => {
+      resolve(await prisma.getPlayerBySocketId(socketId));
     });
   },
 };
