@@ -25,9 +25,9 @@ export default {
       },
     });
   },
-  createRoom: () => {
+  createRoom: (roomId: string | null) => {
     return prisma.matches.create({
-      data: { roomId: "room_" + uniqId.process() },
+      data: { roomId: roomId || "room_" + uniqId.process() },
     });
   },
   joinPlayerToRoom: (data: MatchPlayers) => {
@@ -53,6 +53,27 @@ export default {
       where: {
         id: matchId as number,
       },
+    });
+  },
+  getPlayerByUuid: (uuid: String) => {
+    return prisma.player.findUnique({
+      where: {
+        uuid: uuid as string,
+      },
+    });
+  },
+  getMatch: (where: Matches) => {
+    return prisma.matches.findUnique({
+      where,
+      include: {
+        players: true,
+      },
+    });
+  },
+  updateMatch: (data: Matches, where: Matches) => {
+    return prisma.matches.update({
+      data,
+      where,
     });
   },
 };

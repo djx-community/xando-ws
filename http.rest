@@ -1,11 +1,42 @@
 #baseUrl
-@baseUrl=http://localhost:3000
+@baseUrl=ws://localhost:3000
 
 # update user
-POST {{baseUrl}}/update-user
-Content-Type: application/json
-
+POST {{baseUrl}} {player}
 {
-    "uuid":"3789b2f8-0a7e-4fc7-a213-c8f65214d556",
-    "displayName":"MIDLAJ C"
+    "action":"create",
+    "data":{
+        "displayName":"MIDLAJ C"
+    }
+}
+{
+    "action":"update",
+    "data":{
+        "displayName":"MIDLAJ C"
+    }
+}
+
+
+POST {{baseUrl}} {quick_play}
+
+
+POST {{baseUrl}} {play_with_friend}
+{
+    "action":"request",
+    "data":{
+        "friendUuid":"55xl8gppcz3"
+    }
+}
+{
+    "action": "response",
+    "data": {
+        "response":"accept",
+        "opponent": {
+            "id": 54,
+            "uuid": "55xl8gppcz3",
+            "socketId": "z7rPc8hEam16EEHIAAAD",
+            "displayName": "MIDLAJ"
+        },
+        "roomId": "room_55xl8gprwq7"
+    }
 }
