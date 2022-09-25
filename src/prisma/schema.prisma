@@ -14,15 +14,18 @@ model Player {
     displayName String
     match       MatchPlayers?
     MatchLog    MatchLog[]
+    Matches     Matches[]
 }
 
 model Matches {
-    id        Int            @id @default(autoincrement())
-    roomId    String         @unique
-    createdAt DateTime       @default(now())
-    players   MatchPlayers[]
-    matchLog  MatchLog[]
-    lap       Int            @default(0)
+    id         Int            @id @default(autoincrement())
+    roomId     String         @unique
+    createdAt  DateTime       @default(now())
+    players    MatchPlayers[]
+    matchLog   MatchLog[]
+    lap        Int            @default(0)
+    NextMoveBy Player?        @relation(fields: [nextMoveBy], references: [id])
+    nextMoveBy Int?
 }
 
 model MatchPlayers {
