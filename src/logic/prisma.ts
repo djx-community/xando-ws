@@ -1,4 +1,10 @@
-import { PrismaClient, Player, Matches, MatchPlayers } from "@prisma/client";
+import {
+  PrismaClient,
+  Player,
+  Matches,
+  MatchPlayers,
+  MatchLog,
+} from "@prisma/client";
 import uniqId from "uniqid";
 
 const prisma = new PrismaClient();
@@ -73,6 +79,42 @@ export default {
   updateMatch: (data: Matches, where: Matches) => {
     return prisma.matches.update({
       data,
+      where,
+    });
+  },
+  logMove: (moveProp: MatchLog) => {
+    return prisma.matchLog.create({ data: moveProp });
+  },
+  getMatchLog: (where: MatchLog) => {
+    return prisma.matchLog.findMany({
+      where,
+    });
+  },
+  updateLap: (matchId: number) => {
+    return prisma.matches.update({
+      data: {
+        lap: {
+          increment: 1,
+        },
+      },
+      where: {
+        id: matchId,
+      },
+    });
+  },
+  updatePlayerPont: (playerId: number, matchId: number) => {
+    return prisma.matchPlayers.updateMany({
+      data: {
+        point: { increment: 1 },
+      },
+      where: {
+        matchId,
+        playerId,
+      },
+    });
+  },
+  getMatchPlayers: (where: MatchPlayers & { NOT: any }) => {
+    return prisma.matchPlayers.findMany({
       where,
     });
   },

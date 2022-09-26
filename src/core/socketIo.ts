@@ -2,7 +2,7 @@ import { Server as IoServer, Socket } from "socket.io";
 import { Server as HttpServer } from "http";
 import socketHelper from "../logic/socketHelper";
 import { Payload } from "../config/types";
-import { Matches, MatchPlayers, Player } from "@prisma/client";
+import { Matches, MatchLog, MatchPlayers, Player } from "@prisma/client";
 
 export default (server: HttpServer): IoServer => {
   const io = new IoServer(server, {
@@ -47,11 +47,10 @@ export default (server: HttpServer): IoServer => {
 
       if (playerIcon === "O") {
         //selecting first player using random number
-        const matchPlayers: MatchPlayers[] = await socketHelper.getMatchPlayers(
-          {
-            roomId,
-          } as Matches
-        );
+        const match: Matches & { players: MatchPlayers[] } =
+          await socketHelper.getMatch({ roomId } as Matches);
+        const matchPlayers: MatchPlayers[] = match.players;
+
         const nextMoveBy =
           matchPlayers[Math.floor(Math.random() * (2 - 0) + 0)].playerId;
 
@@ -65,6 +64,7 @@ export default (server: HttpServer): IoServer => {
           action: "start",
           data: {
             nextMoveBy,
+            match,
           },
         });
       }
@@ -111,10 +111,9 @@ export default (server: HttpServer): IoServer => {
           socket.join(payload.data.roomId);
 
           //selecting first player using random number
-          const matchPlayers: MatchPlayers[] =
-            await socketHelper.getMatchPlayers({
-              roomId,
-            } as Matches);
+          const match: Matches & { players: MatchPlayers[] } =
+            await socketHelper.getMatch({ roomId } as Matches);
+          const matchPlayers: MatchPlayers[] = match.players;
 
           const nextMoveBy =
             matchPlayers[Math.floor(Math.random() * (2 - 0) + 0)].playerId;
@@ -129,6 +128,7 @@ export default (server: HttpServer): IoServer => {
             action: "start",
             data: {
               nextMoveBy,
+              match,
             },
           });
         } else {
@@ -136,7 +136,92 @@ export default (server: HttpServer): IoServer => {
       }
     });
 
-    socket.on("match", async (payload: Payload) => {});
+    socket.on("match", async (payload: Payload) => {
+      if (payload.action === "move") {
+        const player: Player = await socketHelper.getPlayerBySocketId(
+          socket.id
+        );
+
+        const match: Matches = await socketHelper.getMatch({
+          roomId: payload.data.roomId,
+        } as Matches);
+
+        if (match.nextMoveBy === player.id) {
+          try {
+            await socketHelper.registerMove({
+              column: payload.data.column,
+              row: payload.data.row,
+              playerId: player.id,
+              matchId: match.id,
+              lap: match.lap,
+            } as MatchLog);
+            io.sockets.in(match.roomId).emit("match", {
+              action: "move",
+              data: {
+                column: payload.data.column,
+                row: payload.data.row,
+              },
+            });
+
+            //checking is lap completed
+            const lapStatus = await socketHelper.checkLapWon(
+              match.lap,
+              match.id
+            );
+            if (lapStatus) {
+              //checking is lap completed
+              const matchStatus = await socketHelper.checkMatchWon(match.id);
+              if (matchStatus) {
+                io.sockets.in(match.roomId).emit("match", {
+                  action: "exit",
+                  data: {
+                    winner: matchStatus,
+                  },
+                });
+              } else {
+                io.sockets.in(match.roomId).emit("match", {
+                  action: "end",
+                  data: {
+                    winner: lapStatus,
+                  },
+                });
+              }
+            } else {
+              const opponent = await socketHelper.getOpponent(
+                match.id,
+                player.id
+              );
+              const nextMoveBy = opponent.playerId;
+              await socketHelper.updateMatch(
+                { nextMoveBy } as Matches,
+                { id: match.id } as Matches
+              );
+              socket.to(match.roomId).emit("match", {
+                action: "turn",
+                data: {
+                  nextMoveBy,
+                },
+              });
+            }
+          } catch (e) {
+            socket.emit("match", {
+              action: "turn",
+              data: {
+                message: "Something went wrong, please try again",
+                error: e,
+              },
+            });
+          }
+        } else {
+          socket.emit("match", {
+            action: "error",
+            data: {
+              message: "Opponents turn",
+            },
+          });
+        }
+      }
+    });
 
     socket.on("disconnect", async (reason: String) => {
       try {
