@@ -1,5 +1,7 @@
-import { Matches, MatchPlayers, Player } from "@prisma/client";
+import { Matches, MatchLog, MatchPlayers, Player } from "@prisma/client";
+import { match } from "assert";
 import uniqId from "uniqid";
+import utils from "../utils/utils";
 import prisma from "./prisma";
 
 export default {
@@ -61,9 +63,11 @@ export default {
       }
     });
   },
-  getPlayerBySocketId: (socketId: string): Promise<Player | null> => {
+  getPlayerBySocketId: (socketId: string): Promise<Player> => {
     return new Promise(async (resolve, reject) => {
-      resolve(await prisma.getPlayerBySocketId(socketId));
+      const player = await prisma.getPlayerBySocketId(socketId);
+      if (player) resolve(player);
+      else resolve({} as Player);
     });
   },
   generateRoomId: (): string => {
@@ -74,12 +78,90 @@ export default {
       const matchPlayers = await prisma.getMatch(where);
 
       if (matchPlayers) resolve(matchPlayers.players);
-      // else resolve([] as MatchPlayers[]);
+      else resolve([]);
     });
   },
   updateMatch: (data: Matches, where: Matches) => {
     return new Promise(async (resolve, reject) => {
       resolve(await prisma.updateMatch(data, where));
+    });
+  },
+  getMatch: (
+    where: Matches
+  ): Promise<Matches & { players: MatchPlayers[] }> => {
+    return new Promise(async (resolve, reject) => {
+      const match = await prisma.getMatch(where);
+      if (match) resolve(match);
+      else resolve({} as Matches & { players: MatchPlayers[] });
+    });
+  },
+  registerMove: (moveProp: MatchLog): Promise<boolean> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await prisma.logMove(moveProp);
+        resolve(true);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
+  checkLapWon: (lapNo: number, matchId: number): Promise<number | null> => {
+    return new Promise(async (resolve, reject) => {
+      const logRows: MatchLog[] = await prisma.getMatchLog({
+        matchId,
+        lap: lapNo,
+      } as MatchLog);
+
+      if (logRows.length > 5) {
+        const map: Map<number, Map<number, number>> = utils.mapRowsIntoMap(
+          logRows
+        );
+
+        Promise.all([
+          utils.checkRows(map),
+          utils.checkRows(map),
+          utils.checkColumn(map),
+        ]).then(async (res) => {
+          const [diagonal, row, column] = res;
+          if (diagonal || row || column) {
+            try {
+              await prisma.updateLap(matchId);
+              await prisma.updatePlayerPont(
+                (diagonal || row || column) as number,
+                matchId
+              );
+              resolve(diagonal || row || column);
+            } catch (e) {}
+          } else if (logRows.length === 9) resolve(0);
+          else resolve(null);
+        });
+      }
+    });
+  },
+  getOpponent: (matchId: number, playerId: number): Promise<MatchPlayers> => {
+    return new Promise(async (resolve, reject) => {
+      const opponent = (
+        await prisma.getMatchPlayers({
+          matchId,
+          NOT: {
+            playerId: {
+              not: playerId,
+            },
+          },
+        } as MatchPlayers & { NOT: any })
+      )[0];
+      resolve(opponent);
+    });
+  },
+  checkMatchWon: (matchId: number): Promise<number | null> => {
+    return new Promise(async (resolve, reject) => {
+      const match = await prisma.getMatch({ id: matchId } as Matches);
+      if (match?.lap === 4) {
+        const players = match.players;
+        if (players[0].point > players[1].point) resolve(players[0].playerId);
+        else if (players[1].point > players[0].point) resolve(players[1].point);
+        else if (players[1].point === players[0].point) resolve(0);
+      } else resolve(null);
     });
   },
 };

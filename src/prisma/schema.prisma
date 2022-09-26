@@ -23,7 +23,7 @@ model Matches {
     createdAt  DateTime       @default(now())
     players    MatchPlayers[]
     matchLog   MatchLog[]
-    lap        Int            @default(0)
+    lap        Int            @default(1)
     NextMoveBy Player?        @relation(fields: [nextMoveBy], references: [id])
     nextMoveBy Int?
 }
@@ -40,11 +40,12 @@ model MatchPlayers {
 
 model MatchLog {
     id        Int      @id @default(autoincrement())
-    Matches   Matches  @relation(fields: [matcheId], references: [id])
-    matcheId  Int
+    Matches   Matches  @relation(fields: [matchId], references: [id])
+    matchId   Int
     column    Int
     row       Int
     Player    Player   @relation(fields: [playerId], references: [id])
     playerId  Int
     createdAt DateTime @default(now())
+    lap       Int
 }
