@@ -30,27 +30,7 @@ export default {
     map: Map<number, Map<number, number>>
   ): Promise<number | null> => {
     return new Promise(async (resolve, reject) => {
-      for (let n = 0; n < 3; n++) {
-        const cell1 = map.get(n)?.get(0);
-        const cell2 = map.get(n)?.get(1);
-        const cell3 = map.get(n)?.get(2);
-
-        const isDefined =
-          cell1 !== undefined && cell2 !== undefined && cell3 !== undefined;
-        const isSame = cell1 === cell2 && cell2 === cell3;
-
-        if (isDefined && isSame) {
-          resolve(cell1);
-        } else {
-          resolve(null);
-        }
-      }
-    });
-  },
-  checkColumn: (
-    map: Map<number, Map<number, number>>
-  ): Promise<number | null> => {
-    return new Promise(async (resolve, reject) => {
+      let isMatching: number | null = null;
       for (let n = 0; n < 3; n++) {
         const cell1 = map.get(0)?.get(n);
         const cell2 = map.get(1)?.get(n);
@@ -61,11 +41,33 @@ export default {
         const isSame = cell1 === cell2 && cell2 === cell3;
 
         if (isDefined && isSame) {
-          resolve(cell1);
-        } else {
-          resolve(null);
+          isMatching = cell1;
+          break;
         }
       }
+      resolve(isMatching);
+    });
+  },
+  checkColumn: (
+    map: Map<number, Map<number, number>>
+  ): Promise<number | null> => {
+    return new Promise(async (resolve, reject) => {
+      let isMatching: number | null = null;
+      for (let n = 0; n < 3; n++) {
+        const cell1 = map.get(n)?.get(0);
+        const cell2 = map.get(n)?.get(1);
+        const cell3 = map.get(n)?.get(2);
+
+        const isDefined =
+          cell1 !== undefined && cell2 !== undefined && cell3 !== undefined;
+        const isSame = cell1 === cell2 && cell2 === cell3;
+
+        if (isDefined && isSame) {
+          isMatching = cell1;
+          break;
+        }
+      }
+      resolve(isMatching); 
     });
   },
   checkDiagonal: (
