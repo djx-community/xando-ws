@@ -10,7 +10,7 @@
     "start": "npm run build && node dist/app.js",
     "prod": "node dist/app.js",
     "dev": "nodemon src/app.ts",
-    "build": "yarn install --dev && yarn install && tsc && tsc-alias",
+    "build": "yarn install --dev && yarn install && prisma migrate dev && tsc && tsc-alias",
     "prisma:init": "dotenv -e .env -- prisma init",
     "prisma:migrate": "dotenv -e .env -- prisma migrate dev",
     "prisma:generate": "dotenv -e .env -- prisma generate",
