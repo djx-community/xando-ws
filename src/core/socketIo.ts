@@ -3,7 +3,6 @@ import { Server as HttpServer } from "http";
 import socketHelper from "../logic/socketHelper";
 import { Payload } from "../config/types";
 import { Matches, MatchLog, MatchPlayers, Player } from "@prisma/client";
-import { match } from "assert";
 
 export default (server: HttpServer): IoServer => {
   const io = new IoServer(server, {
