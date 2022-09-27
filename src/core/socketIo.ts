@@ -63,7 +63,7 @@ export default (server: HttpServer): IoServer => {
             { roomId } as Matches
           );
 
-          // start game todo
+          // start game
           io.sockets.in(roomId).emit("match", {
             action: "start",
             data: {
@@ -82,7 +82,12 @@ export default (server: HttpServer): IoServer => {
         const player = await socketHelper.getPlayerBySocketId(socket.id);
 
         if (player === null) {
-          //todo
+          socket.emit("play_with_friend",{
+            action: "rejected",
+            data: {
+              message: "Player Not Found",
+            },
+          }
         }
 
         //creating and joining to room
@@ -130,7 +135,7 @@ export default (server: HttpServer): IoServer => {
             { roomId } as Matches
           );
 
-          // start game todo
+          // start game
           io.sockets.in(roomId).emit("match", {
             action: "start",
             data: {
