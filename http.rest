@@ -15,6 +15,13 @@ POST {{baseUrl}} {player}
         "displayName":"MIDLAJ C"
     }
 }
+{
+    "action":"leave_room",
+    "data":{
+        "roomId":""
+    }
+}
+
 
 
 POST {{baseUrl}} {quick_play}
@@ -38,5 +45,15 @@ POST {{baseUrl}} {play_with_friend}
             "displayName": "MIDLAJ"
         },
         "roomId": "room_55xl8gprwq7"
+    }
+}
+
+POST {{baseUrl}} {match}
+{
+    "action":"move",
+    "data":{
+        "roomId":"room_1nnll8jmvnie",
+        "colunm":1,
+        "row":2
     }
 }

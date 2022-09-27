@@ -20,7 +20,9 @@ export default {
         resolve(
           await prisma.updatePlayer(data, { socketId: socketId } as Player)
         );
-      } catch (e) {}
+      } catch (e) {
+        reject(e);
+      }
     });
   },
   checkAvailableRoom: (): Promise<string> => {
@@ -53,13 +55,16 @@ export default {
       const matchId: Number = (await prisma.getMatchByRoomId(roomId))?.id || 0;
 
       if (playerId !== 0 && matchId !== 0) {
-        resolve(
-          await prisma.joinPlayerToRoom({
+        try {
+          const matchPlayer = await prisma.joinPlayerToRoom({
             matchId,
             playerId,
             playerIcon,
-          } as MatchPlayers)
-        );
+          } as MatchPlayers);
+          resolve(match);
+        } catch (e) {
+          reject(e);
+        }
       }
     });
   },
@@ -95,6 +100,13 @@ export default {
       else resolve({} as Matches & { players: MatchPlayers[] });
     });
   },
+  isDuplicateMove: (where: MatchLog) => {
+    return new Promise(async (resolve, reject) => {
+      (await prisma.getDuplicateLogCount(where)) === 0
+        ? resolve(false)
+        : resolve(true);
+    });
+  },
   registerMove: (moveProp: MatchLog): Promise<boolean> => {
     return new Promise(async (resolve, reject) => {
       try {
@@ -112,13 +124,14 @@ export default {
         lap: lapNo,
       } as MatchLog);
 
-      if (logRows.length > 5) {
+      if (logRows.length >= 5) {
+        //need minimum 5 move to win
         const map: Map<number, Map<number, number>> = utils.mapRowsIntoMap(
           logRows
         );
 
         Promise.all([
-          utils.checkRows(map),
+          utils.checkDiagonal(map),
           utils.checkRows(map),
           utils.checkColumn(map),
         ]).then(async (res) => {
@@ -131,26 +144,23 @@ export default {
                 matchId
               );
               resolve(diagonal || row || column);
-            } catch (e) {}
-          } else if (logRows.length === 9) resolve(0);
-          else resolve(null);
+            } catch (e) {
+              reject(e);
+            }
+          } else if (logRows.length === 9) {
+            await prisma.updateLap(matchId);
+            resolve(0);
+          } else resolve(null);
         });
-      }
+      } else resolve(null);
     });
   },
   getOpponent: (matchId: number, playerId: number): Promise<MatchPlayers> => {
     return new Promise(async (resolve, reject) => {
-      const opponent = (
-        await prisma.getMatchPlayers({
-          matchId,
-          NOT: {
-            playerId: {
-              not: playerId,
-            },
-          },
-        } as MatchPlayers & { NOT: any })
-      )[0];
-      resolve(opponent);
+      const players = await prisma.getMatchPlayers({
+        matchId,
+      } as MatchPlayers & { NOT: any });
+      resolve(players.filter((val) => val.playerId != playerId)[0]);
     });
   },
   checkMatchWon: (matchId: number): Promise<number | null> => {
@@ -162,6 +172,19 @@ export default {
         else if (players[1].point > players[0].point) resolve(players[1].point);
         else if (players[1].point === players[0].point) resolve(0);
       } else resolve(null);
+    });
+  },
+  endMatch: (matchId: number): Promise<boolean> => {
+    return new Promise(async (resolve, reject) => {
+      const deleteMatch = prisma.deleteMatch({ id: matchId } as Matches);
+      deleteMatch.then(() => {
+        resolve(true);
+      });
+    });
+  },
+  getMatchPlayer: (playerId: number): Promise<MatchPlayers | null> => {
+    return new Promise(async (resolve, reject) => {
+      resolve(await prisma.getMatchPlayer(playerId));
     });
   },
 };

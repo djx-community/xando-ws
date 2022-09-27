@@ -30,7 +30,7 @@ model Matches {
 
 model MatchPlayers {
     id         Int     @id @default(autoincrement())
-    Match      Matches @relation(fields: [matchId], references: [id])
+    Match      Matches @relation(fields: [matchId], references: [id], onDelete: Cascade)
     matchId    Int
     Player     Player  @relation(fields: [playerId], references: [id])
     playerId   Int     @unique
@@ -40,7 +40,7 @@ model MatchPlayers {
 
 model MatchLog {
     id        Int      @id @default(autoincrement())
-    Matches   Matches  @relation(fields: [matchId], references: [id])
+    Matches   Matches  @relation(fields: [matchId], references: [id], onDelete: Cascade)
     matchId   Int
     column    Int
     row       Int

@@ -41,8 +41,8 @@ export default {
       data: data,
     });
   },
-  deletePlayer: (socketId: String) => {
-    return prisma.player.delete({ where: { socketId: socketId as string } });
+  deletePlayer: (socketId: string) => {
+    return prisma.player.delete({ where: { socketId } });
   },
   getPlayerBySocketId: (socketId: String) => {
     return prisma.player.findUnique({
@@ -85,6 +85,11 @@ export default {
   logMove: (moveProp: MatchLog) => {
     return prisma.matchLog.create({ data: moveProp });
   },
+  getDuplicateLogCount: (where: MatchLog) => {
+    return prisma.matchLog.count({
+      where,
+    });
+  },
   getMatchLog: (where: MatchLog) => {
     return prisma.matchLog.findMany({
       where,
@@ -116,6 +121,20 @@ export default {
   getMatchPlayers: (where: MatchPlayers & { NOT: any }) => {
     return prisma.matchPlayers.findMany({
       where,
+    });
+  },
+  deleteMatchLog: (where: MatchLog) => {
+    return prisma.matchLog.deleteMany({ where });
+  },
+  deleteMatchPlayers: (where: MatchPlayers) => {
+    return prisma.matchPlayers.deleteMany({ where });
+  },
+  deleteMatch: (where: Matches) => {
+    return prisma.matches.delete({ where });
+  },
+  getMatchPlayer: (playerId: number) => {
+    return prisma.matchPlayers.findUnique({
+      where: { playerId },
     });
   },
 };
