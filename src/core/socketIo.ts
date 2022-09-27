@@ -82,29 +82,29 @@ export default (server: HttpServer): IoServer => {
         const player = await socketHelper.getPlayerBySocketId(socket.id);
 
         if (player === null) {
-          socket.emit("play_with_friend",{
+          socket.emit("play_with_friend", {
             action: "rejected",
             data: {
               message: "Player Not Found",
             },
-          }
+          });
+        } else {
+          //creating and joining to room
+          const roomId: string = socketHelper.generateRoomId();
+          socket.join(roomId);
+
+          socket.join(payload.data.friendUuid);
+
+          socket.to(payload.data.friendUuid).emit("player", {
+            action: "match_request",
+            data: {
+              by: player,
+              roomId,
+            },
+          });
+
+          socket.leave(payload.data.friendUuid);
         }
-
-        //creating and joining to room
-        const roomId: string = socketHelper.generateRoomId();
-        socket.join(roomId);
-
-        socket.join(payload.data.friendUuid);
-
-        socket.to(payload.data.friendUuid).emit("player", {
-          action: "match_request",
-          data: {
-            by: player,
-            roomId,
-          },
-        });
-
-        socket.leave(payload.data.friendUuid);
       }
 
       if (payload.action === "response") {
