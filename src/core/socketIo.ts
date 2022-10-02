@@ -213,7 +213,8 @@ export default (server: HttpServer): IoServer => {
                   io.sockets.in(match.roomId).emit("match", {
                     action: "exit",
                     data: {
-                      winner: matchStatus,
+                      matchStatus,
+                      lapStatus,
                       message: "Game Over",
                     },
                   });
@@ -233,7 +234,7 @@ export default (server: HttpServer): IoServer => {
                   io.sockets.in(match.roomId).emit("match", {
                     action: "end",
                     data: {
-                      winner: lapStatus,
+                      lapStatus,
                       nextMoveBy,
                       message: "Next lap",
                     },

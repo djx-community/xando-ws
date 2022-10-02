@@ -117,7 +117,13 @@ export default {
       }
     });
   },
-  checkLapWon: (lapNo: number, matchId: number): Promise<number | null> => {
+  checkLapWon: (
+    lapNo: number,
+    matchId: number
+  ): Promise<{
+    cells: { column: number; row: number }[];
+    playerId: number;
+  } | null> => {
     return new Promise(async (resolve, reject) => {
       const logRows: MatchLog[] = await prisma.getMatchLog({
         matchId,
@@ -140,7 +146,9 @@ export default {
             try {
               await prisma.updateLap(matchId);
               await prisma.updatePlayerPont(
-                (diagonal || row || column) as number,
+                (diagonal?.playerId ||
+                  row?.playerId ||
+                  column?.playerId) as number,
                 matchId
               );
               resolve(diagonal || row || column);
@@ -149,7 +157,10 @@ export default {
             }
           } else if (logRows.length === 9) {
             await prisma.updateLap(matchId);
-            resolve(0);
+            resolve({
+              playerId: 0,
+              cells: [],
+            });
           } else resolve(null);
         });
       } else resolve(null);
